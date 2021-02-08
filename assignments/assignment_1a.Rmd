@@ -1,0 +1,21 @@
+---
+title: "Assignment 1a"
+author: "Jaleise Hall"
+date: "2/8/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Why this course?
+
+Here at Bren, I have a focus in environmental data science. By taking this course I hope to better my computing skills to help me in any future career I may have working with large datasets. I want to be able to organize my code well and work efficiently so that my code yields the best results.
+
+#### Data science background
+
+Outside of Bren, I don't have much experience in data science. For undergrad I attended Columbia College Chicago where I majored in Music Business Management and minored in Biology. For my biology minor as well as for the management aspect of my major, I often had to use Excel to complete assignments and manage small sets of data. Since coming to Bren I have taken ESM 206 with Allison, GIS with Frew, ESM 203, and am currently taking watershed analysis with Scott, advanced data  analysis with Allison, and energy demand analysis with Eric Masenet. I think that all of these classes have greatly contributed to my data science skills in R, Excel, and ArcGIS. On top of the courses, I am the data manager for my master's group project where I've learned of new software to write R script (Jupyter notebook, R-studio online) and even had to work in QGIS at one point.
+
+
+
