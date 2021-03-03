@@ -1,0 +1,79 @@
+---
+title: "Assignment 3"
+author: "Jaleise Hall"
+date: "3/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(tibble)
+```
+
+### Assignment Details:
+
+- Create a function that contains a *while* loop
+- Create another function that uses *case_when*
+- Provide an example use of your function in an Rmarkdown document
+- Submit on link to github on Gauchospace as usual
+- *Remember to use good programming practices; documentation, error-checking, understandable variable names AND go through DataTypes.RM
+
+### While Loop 
+
+```{r}
+
+source("R/tertiary_plants.R")
+# Looping when we assume that the number of plants is at least 2650
+tertiary_plants(tert = 2650)
+
+#reaches 720 by plant 2667
+
+```
+
+
+### Case_when Loop
+
+```{r}
+
+source("R/detect_plastic.R")
+
+plastic_table <- tribble(~carbon, ~hydrogen, ~oxygen, ~chlorine,
+                         10, 8, 4, 0,
+                         10, 8, 4, 0,
+                         2, 4, 0, 0,
+                         10, 8, 4, 0,
+                         20, 6, 5, 2,
+                         8, 8, 0, 0,
+                         3, 6, 0, 0,
+                         8, 8, 0, 0,
+                         2, 4, 0, 0,
+                         8, 8, 0, 0,
+                         2, 3, 0, 1,
+                         8, 8, 0, 0,
+                         8, 8, 0, 0,
+                         8, 8, 0, 0,
+                         30, 14, 20, 2,
+                         2, 4, 0, 0,
+                         2, 4, 0, 0,
+                         2, 2, 4, 5,
+                         2, 4, 0, 0,)
+
+
+plastic_table_new <- plastic_table %>% 
+  mutate(plastic_type = detect_plastic(C = carbon, H = hydrogen, O = oxygen, Cl = chlorine))
+
+error_table <- tribble(~carbon, ~hydrogen, ~oxygen, ~chlorine,
+                         -10, 8, 4, 0,
+                         10, -8, 4, 0,
+                         2, 4, 0, 0,
+                         10, 8, 4, 0,
+                         20, 6, -5, 2)
+
+error_table_new <- error_table %>% 
+  mutate(plastic_type = detect_plastic(C = carbon, H = hydrogen, O = oxygen, Cl = chlorine))
+
+
+```
+

@@ -1,0 +1,124 @@
+---
+title: "Assignment 2a"
+author: "Becca Reynolds"
+date: "2/18/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+```
+
+
+##Calculating power
+#Contract:
+*Input*: vehicle mass in kg (m), vehicle speed in m/s (V)
+*Output*: power in watts (Pb)
+*Parameters*: c_rolling (rolling coefficient), g (acceleration due to gravity), A (surface area of vehicle), p_air (air density), and c_drag (aerodynamic resistive coefficient)
+
+#What will the function do?
+Compute the power required to keep a car moving at a given speed, as a proxy for automobile fuel efficiency, using the following equation - *body* of the function
+$Pb = c_rolling * m * g * V + ½ * A *p_air * c_drag * V^3$
+Pb is power in watts, c_rolling is a rolling coefficient, m is vehicle mass in kg, g is acceleration due to gravity, V is vehicle speed in m/s, A is surface area of vehicle in m^2, p_air is air density, and c_drag is an aerodynamic resistive coefficient. 
+#Typical values for:
+c_rolling = 0.015
+c_drag = 0.3
+g = 9.8 m/s^2
+A = 9 m^2  
+p_air = 1.2 mg/m^3
+
+
+```{r}
+#Create car power function
+car_fuel_eff = function(m, V, c_rolling = 0.015,  g = 9.8, A = 9, p_air = 1.2, c_drag = 0.3) {
+  result =  c_rolling * m * g * V + 0.5 * A *p_air * c_drag * V^3
+  return(result) 
+}
+```
+
+#Compute power given:
+m = 31752 kg 
+range of vehicle speeds (30 m/s, 80 km/hr, 120 km/hr, 40 km/hr )
+Unit conversions: km/hr to m/s, 1 km = 1000m, 1 hr = 3600 s, 1 km/hr = 0.277778 m/s
+
+```{r}
+#Create conversion factor for speeds in km/hr
+kmhr_ms_conv = 0.2778
+
+#Compute power given range of vehicle speeds
+power_30 = car_fuel_eff(m=31752, V=30)
+power_22 = car_fuel_eff(m=31752, V=80*kmhr_ms_conv)
+power_33 = car_fuel_eff(m=31752, V=120*kmhr_ms_conv)
+power_11 = car_fuel_eff(m=31752, V=40*kmhr_ms_conv)
+
+#Results
+power_30 
+power_22 
+power_33 
+power_11 
+```
+
+```{r}
+#Create dataframe to plot
+
+car_fuel_eff_df <- data.frame(power=c(power_30, power_22, power_33, power_11), speed=c(30, 80*kmhr_ms_conv, 120*kmhr_ms_conv, 40*kmhr_ms_conv))
+
+car_fuel_eff_df
+
+```
+
+```{r}
+#Create conversion factor for speeds in km/hr
+kmhr_ms_conv = 0.2778
+
+#Compute power given range of vehicle speeds
+power_75_30 = car_fuel_eff(m=31752*0.75, V=30)
+power_75_22 = car_fuel_eff(m=31752*0.75, V=80*kmhr_ms_conv)
+power_75_33 = car_fuel_eff(m=31752*0.75, V=120*kmhr_ms_conv)
+power_75_11 = car_fuel_eff(m=31752*0.75, V=40*kmhr_ms_conv)
+
+#Results
+power_75_30 
+power_75_22 
+power_75_33 
+power_75_11
+
+#Create dataframe to plot
+
+car_fuel_eff_75_df <- data.frame(power=c(power_75_30, power_75_22, power_75_33, power_75_11), speed=c(30, 80*kmhr_ms_conv, 120*kmhr_ms_conv, 40*kmhr_ms_conv))
+
+car_fuel_eff_75_df
+
+```
+
+
+```{r}
+ggplot() +
+  labs(x = "Speed (m/s)",
+       y = "Power (watts)",
+       title = "Vehicle Power as a Function of Speed") +
+  geom_line(data=car_fuel_eff_df, 
+            aes(x=speed, 
+                y=power, 
+                color = "black")) +
+  geom_line(data=car_fuel_eff_75_df, 
+            aes(x=speed, 
+                y=power,
+                color="red")) +
+  scale_x_continuous(limits=c(10,35),
+                     breaks=c(10, 20, 30)) +
+  scale_color_identity(name = "Vehicle Mass",
+                          breaks = c("black", "red"),
+                          labels = c("Mass = 31752 kg", "Mass = 23814 kg"),
+                          guide = "legend") +
+  theme_bw()
+  
+
+```
+
+

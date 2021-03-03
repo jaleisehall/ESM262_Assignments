@@ -1,0 +1,321 @@
+---
+title: "Assignment 2b"
+author: "Jaleise Hall"
+date: "2/22/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(purrr)
+library(ggpubr)
+```
+
+
+##Calculating power
+#Contract:
+*Input*: vehicle mass in kg (m), vehicle speed in m/s (V)
+*Output*: power in watts (Pb)
+*Parameters*: c_rolling (rolling coefficient), g (acceleration due to gravity), A (surface area of vehicle), p_air (air density), and c_drag (aerodynamic resistive coefficient)
+
+#What will the function do?
+Compute the power required to keep a car moving at a given speed, as a proxy for automobile fuel efficiency, using the following equation - *body* of the function
+$Pb = c_rolling * m * g * V + ½ * A *p_air * c_drag * V^3$
+Pb is power in watts, c_rolling is a rolling coefficient, m is vehicle mass in kg, g is acceleration due to gravity, V is vehicle speed in m/s, A is surface area of vehicle in m^2, p_air is air density, and c_drag is an aerodynamic resistive coefficient. 
+#Typical values for:
+c_rolling = 0.015
+c_drag = 0.3
+g = 9.8 m/s^2
+A = 9 m^2  
+p_air = 1.2 mg/m^3
+
+
+```{r}
+#Create car power function
+car_fuel_eff = function(m, V, c_rolling = 0.015,  g = 9.8, A = 9, p_air = 1.2, c_drag = 0.3) {
+  result =  c_rolling * m * g * V + 0.5 * A *p_air * c_drag * V^3
+  return(result) 
+}
+```
+
+#Compute power given:
+m = 31752 kg 
+range of vehicle speeds (30 m/s, 80 km/hr, 120 km/hr, 40 km/hr )
+Unit conversions: km/hr to m/s, 1 km = 1000m, 1 hr = 3600 s, 1 km/hr = 0.277778 m/s
+
+```{r}
+#Create conversion factor for speeds in km/hr
+kmhr_ms_conv = 0.2778
+
+#Compute power given range of vehicle speeds
+power_30 = car_fuel_eff(m=31752, V=30)
+power_22 = car_fuel_eff(m=31752, V=80*kmhr_ms_conv)
+power_33 = car_fuel_eff(m=31752, V=120*kmhr_ms_conv)
+power_11 = car_fuel_eff(m=31752, V=40*kmhr_ms_conv)
+
+#Results
+power_30 
+power_22 
+power_33 
+power_11 
+```
+
+```{r}
+#Create dataframe to plot
+
+car_fuel_eff_df <- data.frame(power=c(power_30, power_22, power_33, power_11), speed=c(30, 80*kmhr_ms_conv, 120*kmhr_ms_conv, 40*kmhr_ms_conv))
+
+car_fuel_eff_df
+
+```
+
+```{r}
+#Create conversion factor for speeds in km/hr
+kmhr_ms_conv = 0.2778
+
+#Compute power given range of vehicle speeds
+power_75_30 = car_fuel_eff(m=31752*0.75, V=30)
+power_75_22 = car_fuel_eff(m=31752*0.75, V=80*kmhr_ms_conv)
+power_75_33 = car_fuel_eff(m=31752*0.75, V=120*kmhr_ms_conv)
+power_75_11 = car_fuel_eff(m=31752*0.75, V=40*kmhr_ms_conv)
+
+#Results
+power_75_30 
+power_75_22 
+power_75_33 
+power_75_11
+
+#Create dataframe to plot
+
+car_fuel_eff_75_df <- data.frame(power=c(power_75_30, power_75_22, power_75_33, power_75_11), speed=c(30, 80*kmhr_ms_conv, 120*kmhr_ms_conv, 40*kmhr_ms_conv))
+
+car_fuel_eff_75_df
+
+```
+
+
+```{r}
+ggplot() +
+  labs(x = "Speed (m/s)",
+       y = "Power (watts)",
+       title = "Vehicle Power as a Function of Speed") +
+  geom_line(data=car_fuel_eff_df, 
+            aes(x=speed, 
+                y=power, 
+                color = "black")) +
+  geom_line(data=car_fuel_eff_75_df, 
+            aes(x=speed, 
+                y=power,
+                color="red")) +
+  scale_x_continuous(limits=c(10,35),
+                     breaks=c(10, 20, 30)) +
+  scale_color_identity(name = "Vehicle Mass",
+                          breaks = c("black", "red"),
+                          labels = c("Mass = 31752 kg", "Mass = 23814 kg"),
+                          guide = "legend") +
+  theme_bw()
+  
+
+```
+
+
+```{r}
+
+source("assignments/assignment2a/assignment2a.R")
+
+nsample = 100
+crolling = runif(min=0.01, max=0.03, n=100)
+
+maxrolling=0.01
+for ( i  in 1:length(maxrolling)) {
+  maxrolling = ifelse(crolling[i] > maxrolling, crolling[i], maxrolling)
+}
+
+maxrolling
+
+```
+
+# Our highway
+
+2 car types 
+
+Imagine with have 3 different car types - and we know how often each occurs:
+
+* car A  mass 31752 kg, area 9 m^2^
+
+* car B mass 30000 kg, area 10 m^2^
+
+Mean highway speed is 120 km/hr 
+
+```{r}
+
+# generate a structure to store info on our possible cars
+possible_cars = data.frame(name = c("A","B"),mass=c(31752,30000), area = c(9,10))
+
+# first look at how results vary for mean speed say 100km/hr
+# do conversion
+speed_base = 120 * kmhr_ms_conv
+
+# because I have one mass and area for each car and only 1 speed
+# I can estimate power for each car type
+# add to the data structure
+possible_cars$power = car_fuel_eff(V=speed_base, A = possible_cars$area, m=possible_cars$mass)
+
+head(possible_cars)
+
+# show results                         
+ggplot(possible_cars, aes(x=mass, y=power, fill=as.factor(area)))+geom_col()+labs(y="Power W", x="Mass (kg)")
+
+```
+
+# Building a highway
+
+What could be the total power consumed if there are 100 cars on this highway each hour,
+they are travelling at a range of speeds - mean is 100km/hr and speeds tend to
+be log-normally distributed)
+
+How would the total power consumed vary by car
+So if all cars are car A; OR all cars are car B OR all cars are car C
+
+We will use *sample* here to generate speeds for our 100 cars and look at different ways to
+repeat power calculation for different cars
+
+* repeating by hand
+* *pmap* for repetition - a efficient way of looping in R
+* *for* for repetition - a more standard way of looping available in many langugaes
+
+# First lets do it 'by hand'
+
+```{r}
+
+# what is I want to estimate average power use given  each car
+
+possible_cars
+
+# use sample to generate a distribution of speeds
+
+# assume a log normal distribution of speeds with mean 100km/hr
+# recall our function needs speed in m/s not km/hr so we will also do a conversion
+# lets get a sample of a 200 speeds- we could also do this by actually measuring speeds
+
+nsample = 100
+
+crollings = rlnorm(mean=crolling, sd=0.1*crolling, nsample)
+summary(crollings)
+
+plot(density(crollings), ylab="Distribution of Rolling Coefficients")
+
+
+# how do we run each car for all speeds 
+
+# first lets to it by hand for the first car - the first row in our possible cars matrix
+possible_cars[1,]
+
+# we could do it by hand
+powerA = car_fuel_eff(c_rolling = crollings, V=120*kmhr_ms_conv, A = possible_cars$area[1], m=possible_cars$mass[1])
+# lets look at what we get
+summary(powerA)
+
+# next car (row 2)
+powerB = car_fuel_eff(c_rolling = crollings, V = 120*kmhr_ms_conv, A = possible_cars$area[2], m=possible_cars$mass[2])
+# lets look at what we get
+summary(powerB)
+
+# we could put this together
+powerall1 = cbind.data.frame(powerA, powerB)
+colnames(powerall1)=possible_cars$name
+
+
+# for plotting sometimes its useful to turn columns in to rows
+powerallr1 = powerall1 %>% pivot_longer(cols=everything(), names_to="car", values_to="power")
+head(powerallr1)
+
+# quick visualization
+# lets save it so that we can compare
+method1_plot = ggplot(powerallr1, aes(car, power, fill=car))+geom_boxplot()+ggtitle("By Hand")
+method1_plot
+
+```
+
+
+# Using `pmap()`
+
+```{r}
+
+possible_cars
+
+# assume a log normal distribution of speeds with mean 100km/hr
+# recall our function needs speed in m/s not km/hr so we will also do a conversion
+# lets get a sample of a 200 speeds- we could also do this by actually measuring speeds
+
+nsample = 100
+
+crollings2 = rlnorm(mean=crolling, sd=0.1*crolling, nsample)
+summary(crollings2)
+
+plot(density(crollings2), ylab="Distribution of Rolling Coefficients")
+
+
+# how do we run each car for all speeds 
+# pmap runs a function for each value in a list of parameters, with other parameters set for each iteration
+
+
+powerall2 = pmap(list(A = possible_cars$area, m=possible_cars$mass), car_fuel_eff, V=120*kmhr_ms_conv, c_rolling = crollings2)
+
+# lets turn to a data frame for easier graphing
+# we can add column names
+powerall2 = as.data.frame(powerall2, col.names=possible_cars$name)
+
+# apply family of functions does this to - FYI
+# what mapply does is run the function for each row in parameters listed, using values for other parameters listed in MoreArgs EACH time - a column for row in parameter list is returned
+powerall2b = mapply(FUN=autopower, A = possible_cars$area, m=possible_cars$mass, MoreArgs = list(V=speeds)  )
+# we can add column names
+colnames(powerall2b)=possible_cars$name
+
+head(powerall2b)
+head(powerall2)
+
+
+# for plotting sometimes its useful to turn columns in to rows
+powerallr2 = powerall2 %>% pivot_longer(cols=everything(), names_to="car", values_to="power")
+head(powerallr2)
+
+# quick visualization
+
+method2_plot = ggplot(powerallr2, aes(car,power, fill=car))+geom_boxplot()+ggtitle("pmap")
+method2_plot
+
+# put plots side by side
+# to confirm that they look similar
+ggarrange(method1_plot, method2_plot)
+
+# compare values
+head(powerallr2)
+head(powerallr1)
+
+# not exactly the same - why?
+# recall that we sample speeds!
+
+# but we can compare means (also using  map :)
+# map runs the function (here - mean), over each column 
+# they are close but still not exact, so statistics such as means and quantiles are # similar, and relative difference between cars is the same
+powerall1 %>% map(mean)
+powerall2 %>% map(mean)
+
+# upper 90% quantile
+powerall1 %>% map(quantile, probs=0.9)
+powerall2 %>% map(quantile, probs=0.9)
+
+```
+
+
+
+
+
+
